@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#0e5b57" />
+  <link rel="icon" href="data:," />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap" rel="stylesheet" />
+  <title>Dentest Chatbot Demo</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --ink: #17312f;
+      --muted: #5f7472;
+      --paper: #f4f8f7;
+      --surface: #ffffff;
+      --surface-soft: #e8f2f0;
+      --line: #ccdcd9;
+      --brand: #0e5b57;
+      --brand-strong: #08413e;
+      --brand-soft: #cce6e1;
+      --user-bubble: #08413e;
+      --user-bubble-text: #ffffff;
+      --warm: #eaa56f;
+      --warm-soft: #fff0e4;
+      --danger: #a33a36;
+      --danger-soft: #fde7e4;
+      --shadow: 0 24px 70px rgba(11, 68, 64, .14);
+      --radius-lg: 28px;
+      --radius-md: 18px;
+      --radius-sm: 12px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --ink: #e9f4f2;
+        --muted: #a7bfbb;
+        --paper: #071b1a;
+        --surface: #102a28;
+        --surface-soft: #173735;
+        --line: #2a4b48;
+        --brand: #75c9c1;
+        --brand-strong: #a4ddd7;
+        --brand-soft: #234b48;
+        --user-bubble: #1b5d58;
+        --user-bubble-text: #ffffff;
+        --warm: #f0b98e;
+        --warm-soft: #493327;
+        --danger: #ffaaa4;
+        --danger-soft: #4b2d2b;
+        --shadow: 0 24px 70px rgba(0, 0, 0, .36);
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html { min-width: 320px; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 9% 14%, color-mix(in srgb, var(--brand-soft) 75%, transparent) 0 9rem, transparent 9.1rem),
+        var(--paper);
+      color: var(--ink);
+      font-family: "DM Sans", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input, textarea { font: inherit; }
+    button { color: inherit; }
+
+    .page {
+      width: min(1180px, calc(100% - 36px));
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 34px 0;
+      display: grid;
+      grid-template-columns: minmax(310px, .84fr) minmax(480px, 1.16fr);
+      gap: 38px;
+      align-items: center;
+    }
+
+    .intro { padding: 24px 12px 24px 6px; }
+    .context {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 27px;
+      color: var(--brand-strong);
+      font-weight: 700;
+      font-size: .86rem;
+    }
+    .context-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #30a66b;
+      box-shadow: 0 0 0 5px color-mix(in srgb, #30a66b 18%, transparent);
+    }
+    h1 {
+      font-family: "Newsreader", serif;
+      font-size: clamp(3.25rem, 6vw, 5.65rem);
+      line-height: .91;
+      letter-spacing: -.055em;
+      font-weight: 600;
+      margin: 0;
+      max-width: 8ch;
+    }
+    .lead {
+      margin: 25px 0 28px;
+      max-width: 43ch;
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.67;
+    }
+    .signal-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-bottom: 30px;
+    }
+    .signal {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--surface) 78%, transparent);
+      font-weight: 600;
+      font-size: .82rem;
+    }
+    .signal svg { width: 15px; height: 15px; color: var(--brand); }
+
+    .facts {
+      max-width: 470px;
+      border-top: 1px solid var(--line);
+      padding-top: 21px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 19px;
+    }
+    .fact strong { display: block; font-size: .86rem; margin-bottom: 4px; }
+    .fact span { color: var(--muted); font-size: .85rem; line-height: 1.5; }
+
+    .chat-shell {
+      height: min(780px, calc(100vh - 68px));
+      min-height: 640px;
+      background: var(--surface);
+      border: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      overflow: hidden;
+      position: relative;
+    }
+    .chat-top {
+      min-height: 76px;
+      padding: 16px 18px 15px 20px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .agent { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .agent-mark {
+      width: 42px;
+      height: 42px;
+      flex: 0 0 auto;
+      border-radius: 14px 14px 14px 5px;
+      display: grid;
+      place-items: center;
+      color: white;
+      background: var(--brand-strong);
+    }
+    .agent-mark svg { width: 23px; height: 23px; }
+    .agent-copy strong { display: block; font-size: .95rem; }
+    .agent-copy span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      font-size: .78rem;
+      margin-top: 2px;
+    }
+    .tiny-dot { width: 6px; height: 6px; border-radius: 50%; background: #30a66b; }
+    .top-actions { display: flex; gap: 7px; }
+    .icon-btn {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: transparent;
+      cursor: pointer;
+    }
+    .icon-btn:hover, .icon-btn:focus-visible { background: var(--surface-soft); outline: none; }
+    .icon-btn svg { width: 18px; height: 18px; }
+
+    .chat-log {
+      overflow-y: auto;
+      padding: 24px 20px 18px;
+      scroll-behavior: smooth;
+      overscroll-behavior: contain;
+    }
+    .day-label {
+      text-align: center;
+      font-size: .73rem;
+      font-weight: 700;
+      color: var(--muted);
+      margin: 0 0 22px;
+    }
+    .message-row { display: flex; gap: 9px; margin-bottom: 16px; align-items: flex-end; }
+    .message-row.user { justify-content: flex-end; }
+    .mini-avatar {
+      width: 25px;
+      height: 25px;
+      flex: 0 0 auto;
+      border-radius: 8px 8px 8px 3px;
+      display: grid;
+      place-items: center;
+      background: var(--brand-soft);
+      color: var(--brand-strong);
+      margin-bottom: 2px;
+    }
+    .mini-avatar svg { width: 14px; height: 14px; }
+    .message {
+      max-width: 81%;
+      padding: 12px 14px;
+      border-radius: 6px 17px 17px 17px;
+      background: var(--surface-soft);
+      color: var(--ink);
+      font-size: .91rem;
+      line-height: 1.52;
+      white-space: pre-line;
+    }
+    .user .message {
+      border-radius: 17px 17px 6px 17px;
+      background: var(--user-bubble);
+      color: var(--user-bubble-text);
+    }
+    .message strong { font-weight: 700; }
+    .message .subtle { color: var(--muted); font-size: .8rem; display: block; margin-top: 7px; }
+    .typing .message { padding: 12px 15px; }
+    .typing-dots { display: flex; gap: 4px; align-items: center; height: 12px; }
+    .typing-dots i {
+      display: block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--muted);
+      animation: typing 1s infinite ease-in-out;
+    }
+    .typing-dots i:nth-child(2) { animation-delay: .15s; }
+    .typing-dots i:nth-child(3) { animation-delay: .3s; }
+    @keyframes typing { 0%, 65%, 100% { transform: translateY(0); opacity: .45; } 32% { transform: translateY(-4px); opacity: 1; } }
+
+    .suggestions {
+      padding: 0 20px 14px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .chip {
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--brand-strong);
+      border-radius: 999px;
+      padding: 8px 11px;
+      font-size: .79rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .chip:hover, .chip:focus-visible { background: var(--surface-soft); outline: none; }
+
+    .composer-wrap { border-top: 1px solid var(--line); padding: 13px 14px 11px; }
+    .composer {
+      min-height: 50px;
+      border: 1px solid var(--line);
+      background: var(--paper);
+      border-radius: 16px;
+      padding: 6px 7px 6px 15px;
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+    }
+    textarea {
+      resize: none;
+      border: 0;
+      outline: none;
+      background: transparent;
+      color: var(--ink);
+      flex: 1;
+      min-width: 0;
+      max-height: 98px;
+      line-height: 1.45;
+      padding: 8px 0;
+    }
+    textarea::placeholder { color: var(--muted); opacity: .92; }
+    .send {
+      border: 0;
+      width: 38px;
+      height: 38px;
+      flex: 0 0 auto;
+      border-radius: 12px;
+      background: var(--user-bubble);
+      color: var(--user-bubble-text);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+    }
+    .send:hover, .send:focus-visible { filter: brightness(1.1); outline: 3px solid var(--brand-soft); }
+    .send:disabled { opacity: .5; cursor: not-allowed; }
+    .send svg { width: 18px; height: 18px; }
+    .disclaimer { text-align: center; margin: 8px 4px 0; color: var(--muted); font-size: .69rem; }
+
+    .capability-sheet {
+      position: absolute;
+      inset: auto 12px 12px 12px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      padding: 20px;
+      transform: translateY(calc(100% + 24px));
+      transition: transform .28s ease;
+      z-index: 4;
+    }
+    .capability-sheet.open { transform: translateY(0); }
+    .sheet-head { display: flex; justify-content: space-between; align-items: center; gap: 15px; }
+    .sheet-head h2 { margin: 0; font-family: "Newsreader", serif; font-size: 1.55rem; }
+    .sheet-head button { border: 0; background: transparent; cursor: pointer; color: var(--muted); font-weight: 700; }
+    .cap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 15px; }
+    .cap {
+      padding: 12px;
+      background: var(--surface-soft);
+      border-radius: 12px;
+      font-size: .8rem;
+      line-height: 1.4;
+    }
+    .cap strong { display: block; margin-bottom: 2px; }
+    .sheet-note { margin: 14px 2px 0; color: var(--muted); font-size: .75rem; line-height: 1.45; }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translate(-50%, 18px);
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: var(--ink);
+      color: var(--surface);
+      font-size: .82rem;
+      font-weight: 700;
+      opacity: 0;
+      pointer-events: none;
+      transition: .22s ease;
+      z-index: 20;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    @media (max-width: 900px) {
+      .page { grid-template-columns: 1fr; align-items: start; padding: 28px 0 34px; gap: 28px; }
+      .intro { padding: 8px 6px; }
+      h1 { max-width: 10ch; font-size: clamp(3rem, 11vw, 4.9rem); }
+      .lead { max-width: 54ch; }
+      .chat-shell { height: 720px; min-height: 620px; }
+    }
+    @media (max-width: 560px) {
+      body { background: var(--paper); }
+      .page { width: 100%; padding: 0; gap: 22px; }
+      .intro { padding: 32px 20px 0; }
+      .context { margin-bottom: 21px; }
+      h1 { font-size: clamp(3.1rem, 16vw, 4.35rem); }
+      .lead { font-size: .97rem; margin: 20px 0 22px; }
+      .facts { grid-template-columns: 1fr; gap: 12px; }
+      .fact:nth-child(2) { border-top: 1px solid var(--line); padding-top: 12px; }
+      .chat-shell { height: min(760px, 88vh); min-height: 610px; border-radius: 26px 26px 0 0; border-left: 0; border-right: 0; border-bottom: 0; }
+      .chat-top { padding-left: 15px; padding-right: 14px; }
+      .chat-log { padding: 20px 14px 14px; }
+      .suggestions { padding-left: 14px; padding-right: 14px; }
+      .message { max-width: 86%; }
+      .cap-grid { grid-template-columns: 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="intro" aria-labelledby="hero-title">
+      <div class="context"><span class="context-dot" aria-hidden="true"></span>Dentest dental demo · Calgary</div>
+      <h1 id="hero-title">Meet Dentest’s digital front desk.</h1>
+      <p class="lead">Ask about care, costs, insurance, urgent symptoms, or start an appointment request. This conversational demo understands natural language and keeps the next step clear.</p>
+      <div class="signal-row" aria-label="Assistant capabilities">
+        <span class="signal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M3 12h18"/></svg>Urgent triage</span>
+        <span class="signal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>Appointment requests</span>
+        <span class="signal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16v10H4z"/><path d="M8 12h4"/></svg>Fees & insurance</span>
+      </div>
+      <div class="facts">
+        <div class="fact"><strong>Sample hours</strong><span>Mon–Thu 8–6 · Fri 8–4<br>Sat 9–2 · Sun closed</span></div>
+        <div class="fact"><strong>Designed for safe handoff</strong><span>Never diagnoses. Flags emergencies and sets honest expectations.</span></div>
+      </div>
+    </section>
+
+    <section class="chat-shell" aria-label="Interactive dental assistant demo">
+      <header class="chat-top">
+        <div class="agent">
+          <div class="agent-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8.4 3.2c1.2 0 2.2.8 3.6.8s2.4-.8 3.6-.8c2.8 0 4.6 2.2 4.2 5.2-.5 3.4-1.6 4.3-2.1 8.3-.3 2.5-1.1 4.1-2.4 4.1-1.8 0-1.6-5.6-3.3-5.6s-1.5 5.6-3.3 5.6c-1.3 0-2.1-1.6-2.4-4.1-.5-4-1.6-4.9-2.1-8.3-.4-3 1.4-5.2 4.2-5.2Z"/></svg></div>
+          <div class="agent-copy"><strong>Daisy, dental concierge</strong><span><i class="tiny-dot"></i>Replies instantly</span></div>
+        </div>
+        <div class="top-actions">
+          <button class="icon-btn" id="guideBtn" type="button" aria-label="View demo guide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.3 2.3 0 0 1 4.4 1c0 1.6-2.2 1.8-2.2 3.2M12 17h.01"/></svg></button>
+          <button class="icon-btn" id="restartBtn" type="button" aria-label="Restart conversation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v6h6M20 20v-6h-6"/><path d="M5.6 15A8 8 0 0 0 19 17M18.4 9A8 8 0 0 0 5 7"/></svg></button>
+        </div>
+      </header>
+
+      <div class="chat-log" id="chatLog" role="log" aria-live="polite" aria-relevant="additions">
+        <div class="day-label">Try the live conversation</div>
+      </div>
+
+      <div>
+        <div class="suggestions" id="suggestions" aria-label="Suggested questions"></div>
+        <div class="composer-wrap">
+          <form class="composer" id="chatForm">
+            <textarea id="userInput" rows="1" maxlength="280" placeholder="Ask anything about your visit…" aria-label="Message Daisy"></textarea>
+            <button class="send" id="sendBtn" type="submit" aria-label="Send message"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 14-7-4 14-3-6-7-1Z"/><path d="m12 13 7-8"/></svg></button>
+          </form>
+          <p class="disclaimer">Demo only · not medical advice · no request is sent or saved</p>
+        </div>
+      </div>
+
+      <aside class="capability-sheet" id="guide" aria-hidden="true">
+        <div class="sheet-head"><h2>What to try</h2><button id="closeGuide" type="button">Close</button></div>
+        <div class="cap-grid">
+          <div class="cap"><strong>Natural questions</strong>“Do you direct bill Sun Life?”</div>
+          <div class="cap"><strong>Urgent concerns</strong>“My face is swollen and I can’t swallow.”</div>
+          <div class="cap"><strong>Guided booking</strong>“I need a cleaning next week.”</div>
+          <div class="cap"><strong>Price context</strong>“What does a filling cost?”</div>
+        </div>
+        <p class="sheet-note">Clinic name, hours, fees, policies and booking integration would be replaced with the client’s verified information before launch.</p>
+      </aside>
+    </section>
+  </main>
+  <div class="toast" id="toast" role="status"></div>
+
+  <script>
+    (function () {
+      var log = document.getElementById('chatLog');
+      var suggestions = document.getElementById('suggestions');
+      var form = document.getElementById('chatForm');
+      var input = document.getElementById('userInput');
+      var sendBtn = document.getElementById('sendBtn');
+      var guide = document.getElementById('guide');
+      var state = { mode: null, step: 0, booking: {}, busy: false };
+      var toothIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M8.4 3.2c1.2 0 2.2.8 3.6.8s2.4-.8 3.6-.8c2.8 0 4.6 2.2 4.2 5.2-.5 3.4-1.6 4.3-2.1 8.3-.3 2.5-1.1 4.1-2.4 4.1-1.8 0-1.6-5.6-3.3-5.6s-1.5 5.6-3.3 5.6c-1.3 0-2.1-1.6-2.4-4.1-.5-4-1.6-4.9-2.1-8.3-.4-3 1.4-5.2 4.2-5.2Z"/></svg>';
+
+      var defaultChips = ['Book a cleaning', 'What does a filling cost?', 'Do you direct bill?', 'I have tooth pain'];
+
+      function escapeHtml(text) {
+        return text.replace(/[&<>'"]/g, function (c) { return ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'})[c]; });
+      }
+
+      function setChips(items) {
+        suggestions.innerHTML = '';
+        items.slice(0, 4).forEach(function (label) {
+          var b = document.createElement('button');
+          b.type = 'button'; b.className = 'chip'; b.textContent = label;
+          b.addEventListener('click', function () { submitMessage(label); });
+          suggestions.appendChild(b);
+        });
+      }
+
+      function addMessage(text, who) {
+        var row = document.createElement('div');
+        row.className = 'message-row ' + (who === 'user' ? 'user' : 'bot');
+        if (who !== 'user') {
+          var avatar = document.createElement('div'); avatar.className = 'mini-avatar'; avatar.innerHTML = toothIcon; row.appendChild(avatar);
+        }
+        var bubble = document.createElement('div'); bubble.className = 'message'; bubble.innerHTML = escapeHtml(text).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        row.appendChild(bubble); log.appendChild(row); log.scrollTop = log.scrollHeight;
+      }
+
+      function showTyping() {
+        var row = document.createElement('div'); row.className = 'message-row bot typing'; row.id = 'typing';
+        var avatar = document.createElement('div'); avatar.className = 'mini-avatar'; avatar.innerHTML = toothIcon;
+        var bubble = document.createElement('div'); bubble.className = 'message'; bubble.innerHTML = '<span class="typing-dots"><i></i><i></i><i></i></span>';
+        row.appendChild(avatar); row.appendChild(bubble); log.appendChild(row); log.scrollTop = log.scrollHeight;
+      }
+
+      function botReply(text, chips) {
+        showTyping(); state.busy = true; sendBtn.disabled = true; setChips([]);
+        window.setTimeout(function () {
+          var typing = document.getElementById('typing'); if (typing) typing.remove();
+          addMessage(text, 'bot'); setChips(chips || defaultChips); state.busy = false; sendBtn.disabled = false;
+        }, 520);
+      }
+
+      function includesAny(s, words) { return words.some(function (w) { return s.indexOf(w) !== -1; }); }
+
+      function emergencyResponse(s) {
+        if (includesAny(s, ['can\'t breathe', 'cannot breathe', 'trouble breathing', 'can\'t swallow', 'cannot swallow', 'uncontrolled bleeding'])) {
+          return { text: '**This may be a medical emergency. Call 911 now.** Do not wait for a dental appointment. If someone is with you, ask them to stay nearby while help is on the way.', chips: ['Restart conversation'] };
+        }
+        if (includesAny(s, ['knocked out', 'tooth fell out', 'avulsed'])) {
+          return { text: 'A knocked-out adult tooth needs urgent care. Hold it by the crown, not the root. If it is dirty, gently rinse it—do not scrub. Try to place it back in the socket, or keep it moist in milk, and contact an emergency dentist immediately.\n\nFor a baby tooth, do not put it back in.', chips: ['Is the clinic open?', 'What about a broken tooth?', 'Restart conversation'] };
+        }
+        if (includesAny(s, ['swollen', 'swelling', 'abscess', 'fever'])) {
+          return { text: 'Facial swelling or fever with dental pain can signal an infection and should be assessed **urgently today**. If swelling affects breathing or swallowing, call 911. Otherwise, contact an emergency dentist now—do not place aspirin on the gum.', chips: ['Is the clinic open?', 'I can’t breathe', 'Restart conversation'] };
+        }
+        return { text: 'I’m sorry you’re hurting. Severe pain, trauma, swelling, or bleeding should be assessed promptly. If you have trouble breathing or swallowing, uncontrolled bleeding, or major facial trauma, call 911.\n\nOtherwise, I can help you draft an urgent appointment request.', chips: ['Start urgent request', 'My face is swollen', 'A tooth was knocked out'] };
+      }
+
+      function startBooking(urgent) {
+        state.mode = 'booking'; state.step = 1; state.booking = { urgency: urgent ? 'Urgent' : 'Routine' };
+        return { text: urgent ? 'I’ll help draft an urgent request. What best describes the issue?' : 'Absolutely. What would you like to book?', chips: urgent ? ['Severe tooth pain', 'Broken tooth', 'Swelling', 'Other urgent issue'] : ['Cleaning & exam', 'Tooth concern', 'Cosmetic consult', 'New patient exam'] };
+      }
+
+      function bookingFlow(raw) {
+        if (/cancel|stop|never mind|restart/i.test(raw)) { state.mode = null; state.step = 0; return { text: 'No problem—the request was not saved or sent. What else can I help with?', chips: defaultChips }; }
+        if (state.step === 1) {
+          state.booking.service = raw; state.step = 2;
+          return { text: 'Got it. When would you prefer to come in? You can say something like “Tuesday afternoon” or “this Saturday morning.”', chips: ['Weekday morning', 'Weekday afternoon', 'Saturday morning'] };
+        }
+        if (state.step === 2) {
+          state.booking.time = raw; state.step = 3;
+          return { text: 'Do you have a timing preference?', chips: ['As soon as possible', 'Within 1 week', 'Within 2 weeks', 'I’m flexible'] };
+        }
+        if (state.step === 3) {
+          state.booking.window = raw; state.step = 0; state.mode = null;
+          var summary = '**Appointment request draft**\n• Type: ' + state.booking.urgency + '\n• Reason: ' + state.booking.service + '\n• Preferred time: ' + state.booking.time + '\n• Timing: ' + state.booking.window + '\n\nIn a live clinic, I’d now check availability and securely collect contact details. This demo has not sent or saved anything.';
+          return { text: summary, chips: ['Start a new request', 'Ask about insurance', 'View sample fees'] };
+        }
+      }
+
+      function answer(raw) {
+        var s = raw.toLowerCase().replace(/[’]/g, "'");
+        if (state.mode === 'booking') return bookingFlow(raw);
+        if (includesAny(s, ['restart conversation'])) return { action: 'restart' };
+        if (includesAny(s, ['911', "can't breathe", 'cannot breathe', 'trouble breathing', "can't swallow", 'cannot swallow', 'uncontrolled bleeding', 'knocked out', 'tooth fell out', 'swollen', 'swelling', 'abscess', 'emergency', 'severe pain', 'tooth pain', 'hurting', 'broken tooth', 'chipped tooth'])) return emergencyResponse(s);
+        if (includesAny(s, ['book', 'appointment', 'schedule', 'cleaning next', 'new patient'])) return startBooking(false);
+        if (includesAny(s, ['urgent request'])) return startBooking(true);
+        if (includesAny(s, ['price', 'cost', 'fee', 'how much', 'filling cost', 'sample fees'])) return { text: 'Here are **illustrative demo estimates** for a Calgary clinic—not quotes:\n• New-patient exam: $95–$160\n• Cleaning: $180–$320\n• X-rays: $40–$150\n• Composite filling: $180–$450\n• Whitening: from $399\n\nActual fees depend on the exam, treatment complexity, and the clinic’s current fee schedule.', chips: ['Do you direct bill?', 'Book an exam', 'Cost of whitening'] };
+        if (includesAny(s, ['insurance', 'direct bill', 'sun life', 'manulife', 'benefits', 'coverage'])) return { text: 'This sample clinic **direct bills most Canadian insurance plans**, including common providers such as Sun Life and Manulife. Coverage varies by plan, so the clinic would submit an estimate when needed. Patients are responsible for any amount not covered.', chips: ['What should I bring?', 'Book a cleaning', 'View sample fees'] };
+        if (includesAny(s, ['hour', 'open', 'close', 'saturday', 'sunday'])) return { text: 'Sample hours are Monday–Thursday 8:00 a.m.–6:00 p.m., Friday 8:00 a.m.–4:00 p.m., and Saturday 9:00 a.m.–2:00 p.m. The clinic is closed Sunday. For a real deployment, these would come from the clinic’s verified schedule.', chips: ['Book an appointment', 'I have an emergency', 'Do you take walk-ins?'] };
+        if (includesAny(s, ['where', 'address', 'location', 'parking', 'calgary'])) return { text: 'This is a Calgary clinic demo, so no real street address is attached. A client version can provide the clinic’s verified address, parking instructions, accessibility details, and a navigation link.', chips: ['What are the hours?', 'Book an appointment', 'Services offered'] };
+        if (includesAny(s, ['service', 'offer', 'do you do', 'treatment'])) return { text: 'The sample clinic offers exams, hygiene and cleaning, fillings, crowns, root canal treatment, extractions, whitening, clear aligner consultations, implants, children’s dentistry, and emergency care.', chips: ['Book a cleaning', 'Tell me about implants', 'Cost of whitening'] };
+        if (includesAny(s, ['walk-in', 'walk in'])) return { text: 'Walk-ins are not guaranteed. For urgent problems, the clinic would first ask about symptoms, then look for the earliest same-day opening. If there is facial swelling, fever, or severe pain, tell me right away.', chips: ['Start urgent request', 'Clinic hours', 'Book a routine visit'] };
+        if (includesAny(s, ['child', 'kid', 'children', 'pediatric'])) return { text: 'Yes—the sample clinic welcomes children. For a first visit, the team can keep things short and positive, explain each step, and adapt to your child’s comfort. Tell me the child’s age and what you’d like help with when requesting a visit.', chips: ['Book a child’s visit', 'Do you direct bill?', 'What should we bring?'] };
+        if (includesAny(s, ['anxious', 'anxiety', 'nervous', 'afraid', 'sedation'])) return { text: 'You’re not alone. The team can note dental anxiety before the visit, move at your pace, explain options, and discuss comfort or sedation approaches with the dentist. Sedation suitability always requires a clinical review.', chips: ['Book a consultation', 'What happens at first visit?', 'Ask about cost'] };
+        if (includesAny(s, ['whitening', 'white teeth'])) return { text: 'The sample clinic offers professional whitening from **$399** as an illustrative starting point. A quick oral-health check comes first, since whitening does not change the colour of crowns, veneers, or fillings.', chips: ['Book a whitening consult', 'Does insurance cover it?', 'Other cosmetic options'] };
+        if (includesAny(s, ['implant'])) return { text: 'Dental implants can replace missing teeth with a titanium fixture and custom crown. Suitability depends on bone, gum health, and overall health, so the first step is a consultation and imaging—not an instant quote.', chips: ['Book an implant consult', 'How much could it cost?', 'Do you offer payment plans?'] };
+        if (includesAny(s, ['root canal'])) return { text: 'Root canal treatment removes infected tissue inside a tooth and seals it to help preserve the tooth. Diagnosis requires an exam and X-ray. If you have swelling, fever, or escalating pain, request urgent care.', chips: ['Start urgent request', 'Ask about cost', 'Book an exam'] };
+        if (includesAny(s, ['cancel', 'reschedule', 'change my'])) return { text: 'A live assistant could look up the appointment after secure verification. In this demo, no patient records are connected. Most clinics ask for at least 24–48 hours’ notice to avoid a late-cancellation fee.', chips: ['Book a new request', 'Clinic hours', 'Talk about insurance'] };
+        if (includesAny(s, ['payment plan', 'financing', 'pay'])) return { text: 'The sample clinic accepts major credit and debit cards and can discuss staged treatment or financing options. Any payment plan would need clinic approval before treatment begins.', chips: ['Ask about insurance', 'View sample fees', 'Book a consultation'] };
+        if (includesAny(s, ['bring', 'first visit', 'first appointment'])) return { text: 'Bring photo ID, your insurance details, a medication list, and any recent dental records or X-rays you have. Arrive a few minutes early for forms. If you have a specific concern, mention it when booking.', chips: ['Book a new patient exam', 'Do you direct bill?', 'How long does it take?'] };
+        if (includesAny(s, ['human', 'person', 'reception', 'staff', 'call me'])) return { text: 'Of course. In a live version, I would offer a warm transfer during office hours or capture a callback request after hours. This demo is not connected to a phone line or clinic team.', chips: ['Keep chatting', 'Clinic hours', 'Start a request'] };
+        if (includesAny(s, ['hello', 'hi ', 'hi!', 'hey', 'good morning', 'good afternoon']) || s === 'hi') return { text: 'Hi! I can help with appointments, services, sample fees, insurance, and urgent dental concerns. What brings you in today?', chips: defaultChips };
+        if (includesAny(s, ['thank', 'great', 'perfect'])) return { text: 'You’re welcome. Is there anything else you’d like to know or would you like to draft an appointment request?', chips: ['Book an appointment', 'View sample fees', 'Clinic hours'] };
+        return { text: 'I can help with that, but I want to make sure I understood. Are you asking about an appointment, treatment, cost, insurance, or an urgent dental concern?', chips: ['Book an appointment', 'Treatment question', 'Cost & insurance', 'Urgent concern'] };
+      }
+
+      function submitMessage(text) {
+        text = (text || input.value).trim();
+        if (!text || state.busy) return;
+        addMessage(text, 'user'); input.value = ''; input.style.height = 'auto';
+        var result = answer(text);
+        if (result.action === 'restart') { restart(); return; }
+        botReply(result.text, result.chips);
+      }
+
+      function restart() {
+        state = { mode: null, step: 0, booking: {}, busy: false };
+        log.innerHTML = '<div class="day-label">Try the live conversation</div>';
+        setChips([]);
+        window.setTimeout(function () {
+          addMessage('Hi, I’m Daisy, Dentest’s dental concierge. I can answer questions, help triage urgent concerns, and draft an appointment request. What can I help with today?', 'bot');
+          setChips(defaultChips);
+        }, 120);
+      }
+
+      form.addEventListener('submit', function (e) { e.preventDefault(); submitMessage(); });
+      input.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitMessage(); } });
+      input.addEventListener('input', function () { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 98) + 'px'; });
+      document.getElementById('restartBtn').addEventListener('click', restart);
+      document.getElementById('guideBtn').addEventListener('click', function () { guide.classList.add('open'); guide.setAttribute('aria-hidden', 'false'); });
+      document.getElementById('closeGuide').addEventListener('click', function () { guide.classList.remove('open'); guide.setAttribute('aria-hidden', 'true'); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { guide.classList.remove('open'); guide.setAttribute('aria-hidden', 'true'); } });
+      restart();
+    })();
+  </script>
+</body>
+</html>
